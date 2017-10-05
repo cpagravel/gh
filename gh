@@ -1,6 +1,6 @@
 . .paths
 GIT_DIR_STRING=$(git rev-parse --git-dir 2>/dev/null)
-MAX_ITEMS_SHOWN=15
+MAX_ITEMS_SHOWN=8
 
 usage()
 {
