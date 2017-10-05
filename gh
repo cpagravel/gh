@@ -1,0 +1,45 @@
+. .paths
+GIT_DIR_STRING=$(git rev-parse --git-dir 2>/dev/null)
+if [ "$GIT_DIR_STRING" == "" ];
+then
+    echo "fatal: Not a git repository";
+else
+    LINE=$(expr $1)
+    FILE="$GIT_DIR_STRING/logs/HEAD"
+
+    RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed '1!G;h;$!d'` 
+    #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null` 
+
+
+    IFS=$'\n' MATCHES=(${RESULT_STRING//$'\n'/ })
+    IFS=$'\n' MATCHES=($RESULT_STRING)
+    TMP_COUNT=0
+
+    if [ "$1" == "" ];
+        then
+        if [ "$RESULT_STRING" == "" ];
+            then
+                echo "No checkout history";
+        else
+            for RESULT in "${MATCHES[@]}"
+            do
+                if [ "${TMP_COUNT}" -le 10 ];
+                    then
+                        echo "${TMP_COUNT}. $RESULT"
+                        TMP_COUNT=$(expr $TMP_COUNT + 1)
+                fi
+            done
+        fi
+    # elif [ "$1" == "0" ];
+        # then
+            # git checkout HEAD
+    # elif [ "${#MATCHES[@]}" == 1 ];
+        # then
+            # git checkout "${MATCHES[$LINE]}"
+    elif [ "$1" -le "${#MATCHES[@]}" ];
+        then 
+            git checkout "${MATCHES[$1]}"
+    else
+        echo "Invalid selection, unable to checkout"
+    fi
+fi
