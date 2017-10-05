@@ -37,7 +37,7 @@ else
     d) 
       HEAD_FILE_TEXT=$(cat $FILE)
       BRANCH_TEXT=$(gh ${OPTARG} | xargs echo -n)
-      HEAD_FILE_CLEANED=$(cat $FILE | grep -vP 'moving from (?='${BRANCH_TEXT}' to)')
+      HEAD_FILE_CLEANED=$(cat $FILE | grep -vP 'to (?='${BRANCH_TEXT}'))')
       printf "$HEAD_FILE_CLEANED\n" > $FILE
       exit 0;
       ;;
@@ -74,8 +74,10 @@ else
   # old method using sed to get the best match
   #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null` 
 
-  # the second sed command reverses the order. The awk command removes duplicates via associative array.
-  RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar)) { ar[$1]; list[i++]=$1; } } END {for (i = 0; i < length(list); i++) {print list[i]; }  }'` 
+  # First command (awk) gets last column if second last column matches "to"
+  # Second command (sed) reverses the order. 
+  # Third command (awk) removes duplicates via associative array.
+  RESULT_STRING=`awk '{if ($(NF-1) == "to") {print $(NF);}}' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar) && !(match($1,/'"HEAD"'/))) { ar[$1]; list[i++]=$1; } } END {for (i = 1; i < length(list); i++) {print list[i]; }  }'` 
 
   MATCHES=${RESULT_STRING}
   MATCHES=($RESULT_STRING)
