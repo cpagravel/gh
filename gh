@@ -77,7 +77,7 @@ else
   # First command (awk) gets last column if second last column matches "to"
   # Second command (sed) reverses the order. 
   # Third command (awk) removes duplicates via associative array.
-  RESULT_STRING=`awk '{if ($(NF-1) == "to") {print $(NF);}}' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar) && !(match($1,"(^HEAD|^refs/)"))) { ar[$1]; list[i++]=$1; } } END {for (i = 1; i < length(list); i++) {print list[i]; }  }'` 
+  RESULT_STRING=`awk '{if ($(NF-4) == "moving" && $(NF-3) == "from") {print $(NF);}}' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar) && !(match($1,"(^HEAD|^refs/)"))) { ar[$1]; list[i++]=$1; } } END {for (i = 1; i < length(list); i++) {print list[i]; }  }'` 
 
   MATCHES=${RESULT_STRING}
   MATCHES=($RESULT_STRING)
