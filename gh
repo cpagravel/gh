@@ -1,4 +1,3 @@
-. .paths
 GIT_DIR_STRING=$(git rev-parse --git-dir 2>/dev/null)
 MAX_ITEMS_SHOWN=8
 
@@ -6,8 +5,10 @@ usage()
 {
 gst_filename=$(basename $0)
 echo -e "
-usage: ${gst_filename} [ -v | -n ITEM_LIMIT | REF_NUM | -s SEARCH_STRING ]
-       ${gst_filename} [ -c | -d ] REF_NUM
+usage: ${gst_filename} [-h|--help] [-v] [REF_NUM] [-n ITEM_LIMIT] [-s SEARCH_STRING]
+       ${gst_filename} [-c REF_NUM] [-d REF_NUM]
+
+  -h, --help           display help
 
   -v                   show all branch references in history
 
@@ -17,11 +18,16 @@ usage: ${gst_filename} [ -v | -n ITEM_LIMIT | REF_NUM | -s SEARCH_STRING ]
 
   -s SEARCH_STRING     display a list of matches of branch references in the history and display their corresponding REF_NUM
 
-  -c REF_NUM           eq to \e[32mgit checkout \e[31m <BRANCH_REF> \e[m where \e[31m<BRANCH_REF>\e[m is replaced with the branch referenced by REF_NUM
+  -c REF_NUM           eq to \033[32mgit checkout \033[31m <BRANCH_REF> \033[m where \033[31m<BRANCH_REF>\033[m is replaced with the branch referenced by REF_NUM
 
   -d REF_NUM           delete all occurances of a branch reference in history
 "
 }
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+  usage
+  exit 0;
+fi
 
 # Used to determine if the parameter is an integer
 SELECT_NUM=$(echo "$1" | grep -oP '^(\d+)$')
