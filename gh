@@ -4,12 +4,14 @@ if [ "$GIT_DIR_STRING" == "" ];
 then
     echo "fatal: Not a git repository";
 else
-    LINE=$(expr $1)
+    LINE=$(expr $1 2>/dev/null)
     FILE="$GIT_DIR_STRING/logs/HEAD"
 
-    RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed '1!G;h;$!d'` 
+    # old method using sed to get the best match
     #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null` 
 
+    # the second sed command reverses the order. The awk command removes duplicates via associative array.
+    RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar)) { ar[$1]; list[i++]=$1; } } END {for (i = 0; i < length(list); i++) {print list[i]; }  }'` 
 
     IFS=$'\n' MATCHES=(${RESULT_STRING//$'\n'/ })
     IFS=$'\n' MATCHES=($RESULT_STRING)
