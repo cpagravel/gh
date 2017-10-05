@@ -1,47 +1,110 @@
 . .paths
 GIT_DIR_STRING=$(git rev-parse --git-dir 2>/dev/null)
-if [ "$GIT_DIR_STRING" == "" ];
-then
-    echo "fatal: Not a git repository";
+MAX_ITEMS_SHOWN=15
+
+usage()
+{
+gst_filename=$(basename $0)
+echo -e "
+usage: ${gst_filename} [ -v | -n ITEM_LIMIT | REF_NUM | -s SEARCH_STRING ]
+       ${gst_filename} [ -c | -d ] REF_NUM
+
+  -v                   show all branch references in history
+
+  REF_NUM              print the name of the branch referenced by REF_NUM
+
+  -n ITEM_LIMIT        show the most recent branches limited by the number provided by ITEM_LIMIT
+
+  -s SEARCH_STRING     display a list of matches of branch references in the history and display their corresponding REF_NUM
+
+  -c REF_NUM           eq to \e[32mgit checkout \e[31m <BRANCH_REF> \e[m where \e[31m<BRANCH_REF>\e[m is replaced with the branch referenced by REF_NUM
+
+  -d REF_NUM           delete all occurances of a branch reference in history
+"
+}
+
+# Used to determine if the parameter is an integer
+SELECT_NUM=$(echo "$1" | grep -oP '^(\d+)$')
+
+if [ "$GIT_DIR_STRING" == "" ]; then
+  echo "fatal: Not a git repository";
 else
-    LINE=$(expr $1 2>/dev/null)
-    FILE="$GIT_DIR_STRING/logs/HEAD"
+  LINE=$(expr $1 2>/dev/null)
+  FILE="$GIT_DIR_STRING/logs/HEAD"
 
-    # old method using sed to get the best match
-    #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null` 
+  while getopts ":n:c:s:d:v" opt; do
+    case "${opt}" in
+    d) 
+      HEAD_FILE_TEXT=$(cat $FILE)
+      BRANCH_TEXT=$(gh ${OPTARG} | xargs echo -n)
+      HEAD_FILE_CLEANED=$(cat $FILE | grep -vP 'moving from (?='${BRANCH_TEXT}' to)')
+      printf "$HEAD_FILE_CLEANED\n" > $FILE
+      exit 0;
+      ;;
+      
+    n)
+      MAX_ITEMS_SHOWN=$(expr $(echo ${OPTARG} | grep -oP '^(\d+)$'))
+      if [ $MAX_ITEMS_SHOWN == "" ]; then
+        echo "Integer argument needed for '-n'"
+        exit -1;
+      fi
+      ;;
+    v)
+      MAX_ITEMS_SHOWN=1000
+      ;;
+    s)
+      echo ''
+      gh -v | grep -i ${OPTARG} | awk '{print "\033[31m"$1"\033[0m " $2;}'
+      echo ''
+      exit 0;
+      ;;
+    c)
+      git checkout $(gh ${OPTARG})
+      exit -1;
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      exit -1;
+      ;;
+    esac
+  done
 
-    # the second sed command reverses the order. The awk command removes duplicates via associative array.
-    RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar)) { ar[$1]; list[i++]=$1; } } END {for (i = 0; i < length(list); i++) {print list[i]; }  }'` 
 
-    IFS=$'\n' MATCHES=(${RESULT_STRING//$'\n'/ })
-    IFS=$'\n' MATCHES=($RESULT_STRING)
-    TMP_COUNT=0
+  # old method using sed to get the best match
+  #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null` 
 
-    if [ "$1" == "" ];
-        then
-        if [ "$RESULT_STRING" == "" ];
-            then
-                echo "No checkout history";
-        else
-            for RESULT in "${MATCHES[@]}"
-            do
-                if [ "${TMP_COUNT}" -le 10 ];
-                    then
-                        echo "${TMP_COUNT}. $RESULT"
-                        TMP_COUNT=$(expr $TMP_COUNT + 1)
-                fi
-            done
-        fi
-    # elif [ "$1" == "0" ];
-        # then
-            # git checkout HEAD
-    # elif [ "${#MATCHES[@]}" == 1 ];
-        # then
-            # git checkout "${MATCHES[$LINE]}"
-    elif [ "$1" -le "${#MATCHES[@]}" ];
-        then 
-            git checkout "${MATCHES[$1]}"
+  # the second sed command reverses the order. The awk command removes duplicates via associative array.
+  RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar)) { ar[$1]; list[i++]=$1; } } END {for (i = 0; i < length(list); i++) {print list[i]; }  }'` 
+
+  MATCHES=${RESULT_STRING}
+  MATCHES=($RESULT_STRING)
+  TMP_COUNT=0
+
+  if [ "$1" == "" ] || [ "$1" == "-v" ] || [ "$1" == "-n" ]; then
+    if [ "$RESULT_STRING" == "" ]; then
+      echo "No checkout history";
     else
-        echo "Invalid selection, unable to checkout"
+      for RESULT in "${MATCHES[@]}"
+      do
+        if [ "${TMP_COUNT}" -le $MAX_ITEMS_SHOWN ]; then
+          echo "${TMP_COUNT}. $RESULT"
+          TMP_COUNT=$(expr $TMP_COUNT + 1)
+        fi
+      done
     fi
-fi
+  # elif [ "$1" == "0" ];
+    # then
+      # git checkout HEAD
+  # elif [ "${#MATCHES[@]}" == 1 ];
+    # then
+      # git checkout "${MATCHES[$LINE]}"
+  elif [ "$SELECT_NUM" != "" ]; then
+    if [ "$SELECT_NUM" -le "${#MATCHES[@]}" ]; then
+      echo "${MATCHES[$SELECT_NUM]}"
+    else
+      echo "Invalid selection, unable to reference";
+      exit -1;
+    fi
+  fi # SELECT_NUM
+fi # GIT_DIR_STRING
