@@ -30,7 +30,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 fi
 
 # Used to determine if the parameter is an integer
-SELECT_NUM=$(echo "$1" | grep -oP '^(\d+)$')
+SELECT_NUM=$(echo "$1" | egrep '^(\d+)$')
 
 if [ "$GIT_DIR_STRING" == "" ]; then
   echo "fatal: Not a git repository";
@@ -48,7 +48,7 @@ else
         cp $GIT_DIR_STRING/logs/HEAD $GIT_DIR_STRING/logs/HEAD.bak
       fi
       BRANCH_TEXT=$(gh ${OPTARG} | xargs echo -n)
-      HEAD_FILE_CLEANED=$(cat $FILE | grep -vP 'to (?='${BRANCH_TEXT}')') # v flag means get the results that don't match
+      HEAD_FILE_CLEANED=$(cat $FILE | egrep -v 'to (?='${BRANCH_TEXT}')') # v flag means get the results that don't match
       # Check if result succeeded before overwriting file
       if [ $? == '0' ]; then
         printf "$HEAD_FILE_CLEANED\n" > $FILE
@@ -57,7 +57,7 @@ else
       ;;
       
     n)
-      MAX_ITEMS_SHOWN=$(expr $(echo ${OPTARG} | grep -oP '^(\d+)$'))
+      MAX_ITEMS_SHOWN=$(expr $(echo ${OPTARG} | egrep '^(\d+)$'))
       if [ $MAX_ITEMS_SHOWN == "" ]; then
         echo "Integer argument needed for '-n'"
         exit -1;
@@ -68,7 +68,7 @@ else
       ;;
     s)
       echo ''
-      gh -v | grep -i ${OPTARG} | awk '{print "\033[31m"$1"\033[0m " $2;}'
+      gh -v | egrep -i ${OPTARG} | awk '{print "\033[31m"$1"\033[0m " $2;}'
       echo ''
       exit 0;
       ;;
