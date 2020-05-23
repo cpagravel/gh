@@ -40,7 +40,7 @@ else
 
   while getopts ":n:c:s:d:v" opt; do
     case "${opt}" in
-    d) 
+    d)
       HEAD_FILE_TEXT=$(cat $FILE)
       # Backup file before modifying, but only if file is not empty
       HEAD_FILE_LENGTH=${#HEAD_FILE_TEXT}
@@ -55,7 +55,7 @@ else
       fi
       exit 0;
       ;;
-      
+
     n)
       MAX_ITEMS_SHOWN=$(expr $(echo ${OPTARG} | egrep '^(\d+)$'))
       if [ $MAX_ITEMS_SHOWN == "" ]; then
@@ -86,10 +86,10 @@ else
 
 
   # old method using sed to get the best match
-  #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null` 
+  #RESULT_STRING=`sed -n 's/^.*from \(\S*\) to.*$/\1/p' $FILE | sed -n "$LINEp" 2>/dev/null`
 
   # First command (awk) gets last column if second last column matches "to"
-  # Second command (sed) reverses the order. 
+  # Second command (sed) reverses the order.
   # Third command (awk) removes duplicates via associative array.
   RESULT_STRING=`awk '{if ($(NF-4) == "moving" && $(NF-3) == "from") {print $(NF);}}' $FILE | sed '1!G;h;$!d' | awk 'BEGIN {i=0;} { if (!($1 in ar) && !(match($1,"(^HEAD|^refs/)"))) { ar[$1]; list[i++]=$1; } } END {for (i = 1; i in list; i++) {print list[i]; }  }'`
 
