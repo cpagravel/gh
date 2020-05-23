@@ -1,11 +1,11 @@
 import setuptools
 
 setuptools.setup(
-    name = "gh",
-    packages = {".": "gh"},
+    name = "githc",
+    packages = {".": "githc"},
     version = "0.1.0",
     license="MIT",
-    description = "Git status tool",
+    description = "Git history checkout tool",
     author = "Chris Gravel",
     author_email = "cpagravel@gmail.com",
     url = "https://github.com/cpagravel/gh",

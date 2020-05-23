@@ -19,7 +19,7 @@ Note that the output is colorized in the terminal and intended for a dark themed
 ## Installation
 Install from pip.
 ```
-pip install gh
+pip install githc
 ```
 
 ## Compatability
