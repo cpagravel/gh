@@ -9,7 +9,7 @@ setuptools.setup(
     author = "Chris Gravel",
     author_email = "cpagravel@gmail.com",
     url = "https://github.com/cpagravel/gh",
-    download_url = "https://github.com/cpagravel/gh/archive/0.1.0.tar.gz",    # I explain this later on
+    download_url = "https://github.com/cpagravel/gh/archive/0.1.1.tar.gz",
     keywords = ["git", "git history", "git checkout", "git workflow"],
     classifiers=[
         "Development Status :: 4 - Beta",
