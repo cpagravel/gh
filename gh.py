@@ -11,7 +11,7 @@ import sys
 
 from typing import Callable, List, Union
 
-ITEMS_TO_SHOW = 8
+ITEMS_TO_SHOW = 10
 DEBUG = False
 
 LOGGER = logging.getLogger(__name__)
@@ -85,6 +85,8 @@ def displayList(checkout_history, verbose=False):
     header = Colors.colorize("#   BRANCH HISTORY", Colors.YELLOW)
     LOGGER.info(header)
     for (index, branch) in enumerate(checkout_history):
+        if not verbose and index > ITEMS_TO_SHOW:
+            break
         index = Colors.colorize(index, Colors.PURPLE)
         branch = Colors.colorize(branch, Colors.GREEN)
         LOGGER.info("{:<16} {:<21} ({})".format(index, branch, index))
@@ -110,14 +112,18 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-v", action="store_true", help="show all branch references in history")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="show all branch references in history")
     parser.add_argument("--debug", action="store_true", help="show bash commands")
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("REF", metavar="REF_INT", type=checkValidRef(item_count), nargs="?",
-                        help="Output the branch reference in checkout history")
-    group.add_argument("-c", type=checkValidRef(item_count), metavar="REF_INT", dest="checkout", help=("eq to " + Colors.colorize("git checkout ", Colors.GREEN)
-                        + Colors.colorize("<BRANCH_REF>", Colors.RED)))
+    group.add_argument(
+        "REF", metavar="REF_INT", type=checkValidRef(item_count), nargs="?",
+        help="Output the branch reference in checkout history")
+    group.add_argument(
+        "-c", type=checkValidRef(item_count), metavar="REF_INT",
+        dest="checkout", help=("eq to " + Colors.colorize("git checkout ", Colors.GREEN)
+        + Colors.colorize("<BRANCH_REF>", Colors.RED)))
 
     args = parser.parse_args()
 
@@ -133,7 +139,7 @@ def main():
             LOGGER.error(err.decode())
         LOGGER.info(output.decode())
     else:
-        displayList(checkout_history, args.v)
+        displayList(checkout_history, args.verbose)
 
 if __name__ == "__main__":
     main()

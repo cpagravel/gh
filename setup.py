@@ -3,7 +3,7 @@ import setuptools
 setuptools.setup(
     name = "githc",
     packages = {".": "githc"},
-    version = "0.1.0",
+    version = "0.1.1",
     license="MIT",
     description = "Git history checkout tool",
     author = "Chris Gravel",
