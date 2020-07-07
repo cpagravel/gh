@@ -1,7 +1,7 @@
-# gst [![MIT License][license-badge]](LICENSE.md)
+# gh [![MIT License][license-badge]](LICENSE.md)
 
 ## Synposis
-gst is short for **G**it **H**istory - it's a commandline app with some neat features for improving your workflow with git
+gh is short for **G**it **H**istory - it's a commandline app with some neat features for improving your workflow with git
 Note that gh is meant for in dark themed terminals
 
 ## Usage
